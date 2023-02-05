@@ -1,3 +1,4 @@
+#Importing Libraries
 import pandas as pd
 import time
 from selenium import webdriver
@@ -14,33 +15,34 @@ Links=[]
 browser = webdriver.Chrome()
 
 # Looping through the Brand names to search on Amazon
-for p in range(len(Brand_Name)):
+for brand in Brand_Name:
     # Constructing the URL with the brand name to search
-    URL='https://www.amazon.in/s?k=headphones&i=electronics&bbn=1388921031&rh=n%3A1388921031%2Cp_89%3A{}&dc&page=1&crid=26YCJ7VB7YLJ4&qid=1675167468&rnid=3837712031&sprefix=%2Caps%2C1567&ref=sr_pg_'.format(Brand_Name[p])
+    URL='https://www.amazon.in/s?k=headphones&i=electronics&bbn=1388921031&rh=n%3A1388921031%2Cp_89%3A{}&dc&page=1&crid=26YCJ7VB7YLJ4&qid=1675167468&rnid=3837712031&sprefix=%2Caps%2C1567&ref=sr_pg_'.format(brand)
     # Looping through 3 pages of results for each brand
-    for k in range(1,4):
+    for url in range(1,4):
         # Replacing the page number in the URL
-        url = URL.replace("page=1", "page={}".format(k))
-        new_url=url+'{}'.format(k)
+        urls = URL.replace("page=1", "page={}".format(url))
+        new_url=urls+'{}'.format(url)
         # Loading the URL in the browser
         browser.get(new_url)
         # Finding the links to product pages
-        elem=browser.find_elements(By.XPATH,"//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']")
-        links = [i.get_attribute("href") for i in elem]
+        LINKS=browser.find_elements(By.XPATH,"//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']")
+        links = [link.get_attribute("href") for link in LINKS]
         # Adding the links to the list
         Links.append(links)
     # Waiting for 3 seconds between each brand search
     time.sleep(3)
 
 # Lists to store product information
-an=[]
-bn=[]
-cn=[]
-dn=[]
-en=[]
-fn=[]
-gn=[]
-hn=[]
+product_title=[]
+product_price=[]
+brand_name=[]
+product_model=[]
+product_colour=[]
+product_form_factor=[]
+product_connector_type=[]
+product_Connectivity=[]
+
 
 # Merging all sublists of links into a single list
 merged_list = []
@@ -63,9 +65,9 @@ def extract_specifications(rows):
 
 # Looping through each product link
 
-for i in range(len(merged_list)):
+for links in merged_list:
 
-    browser.get(merged_list[i])
+    browser.get(links)
     elem1=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
     text=elem1.text
     an.append(text)
@@ -112,7 +114,7 @@ for i in range(len(merged_list)):
 #Converting Lists to Data Frame
 df=pd.DataFrame([an,bn,cn,dn,en,fn,gn])
 df=df.transpose()
-df.columns = ['Title', 'Price','Brand','Model Name','Colour','Form factor','Connector Type']
+df.columns = ['Title', 'Price','Brand','Model Name','Colour','Form factor','Connector Type'.'Connectivity']
 
 
 #Converting List to CSV
