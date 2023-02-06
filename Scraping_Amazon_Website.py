@@ -70,7 +70,7 @@ for links in merged_list:
     browser.get(links)
     elem1=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
     text=elem1.text
-    an.append(text)
+    product_title.append(text)
 
     try:
         elem2=browser.find_element(By.XPATH,'//span[@class="a-price-whole"]')
@@ -80,7 +80,7 @@ for links in merged_list:
         pass
         
   
-    bn.append(text2)
+    product_price.append(text2)
     try:
         elem3 = browser.find_element(By.XPATH,'//table[@class="a-normal a-spacing-micro"]')
         rows = elem3.find_elements(By.TAG_NAME, "tr")
@@ -94,17 +94,17 @@ for links in merged_list:
     
     cols=extract_specifications(rows)
     if len(cols)==5:
-        cn.append(cols[0])
-        dn.append(cols[1])
-        en.append(cols[2])
-        fn.append(cols[3])
-        gn.append(cols[4])
+        brand_name.append(cols[0])
+        product_model.append(cols[1])
+        product_colour.append(cols[2])
+        product_form_factor.append(cols[3])
+        product_connector_type.append(cols[4])
     else:    
-        cn.append('N.A')
-        dn.append('N.A')
-        en.append('N.A')
-        fn.append('N.A')
-        gn.append('N.A')
+        brand_name.append('N.A')
+        product_model.append('N.A')
+        product_colour.append('N.A')
+        product_form_factor.append('N.A')
+        product_connector_type.append('N.A')
 
 
 
@@ -112,7 +112,7 @@ for links in merged_list:
         
 
 #Converting Lists to Data Frame
-df=pd.DataFrame([an,bn,cn,dn,en,fn,gn])
+df=pd.DataFrame([product_title,product_price,brand_name,product_model,product_colour,product_form_factor,product_connector_type])
 df=df.transpose()
 df.columns = ['Title', 'Price','Brand','Model Name','Colour','Form factor','Connector Type'.'Connectivity']
 
