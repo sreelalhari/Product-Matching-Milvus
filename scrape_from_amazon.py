@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 
 # Importing exception handling libraries
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 
 def get_product_links(base_url, brand_list):
     # Initialize an empty list to store the links
@@ -76,87 +77,58 @@ links=get_product_links(base_url,brand_list)
 links=list(set(links))
 
 
-
-# Lists to store product information
-product_title=[]
-product_price=[]
-brand_name=[]
-product_model=[]
-product_colour=[]
-product_form_factor=[]
-product_connector_type=[]
-product_Connectivity=[]
-
-
-
-# Removing duplicate links
-merged_list=list(set(merged_list))
-
-# Function to extract product specifications
-def extract_specifications(rows):
-    # Join the elements of the list into a single string
-    for row in rows:
-        try:
-            # Finding the product specifications
-            cols = row.find_elements(By.XPATH, '//span[@class="a-size-base po-break-word"]')
-            cols = [col.text for col in cols]
-        except:
-            cols='N.A'
-    return cols
-
-# Looping through each product link
-
-for links in merged_list:
-
-    browser.get(links)
-    elem1=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
-    text=elem1.text
-    product_title.append(text)
-
+def get_product_details():
+    details_dict={}
     try:
-        elem2=browser.find_element(By.XPATH,'//span[@class="a-price-whole"]')
-        text2=elem2.text
+        title_element=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
+        title=title_element.text
     except:
-        text2='N.A'
-        pass
-        
-  
-    product_price.append(text2)
-    try:
-        elem3 = browser.find_element(By.XPATH,'//table[@class="a-normal a-spacing-micro"]')
-        rows = elem3.find_elements(By.TAG_NAME, "tr")
-        col=extract_specifications(rows)
-
-
-        
-    except:
-        text3='N.A'
-        pass
+        title= 'NaN'
+    details_dict['Title']=title
     
-    cols=extract_specifications(rows)
-    if len(cols)==5:
-        brand_name.append(cols[0])
-        product_model.append(cols[1])
-        product_colour.append(cols[2])
-        product_form_factor.append(cols[3])
-        product_connector_type.append(cols[4])
-    else:    
-        brand_name.append('N.A')
-        product_model.append('N.A')
-        product_colour.append('N.A')
-        product_form_factor.append('N.A')
-        product_connector_type.append('N.A')
+    try:
+        price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
+        price = price_element.text
+    except:
+        price = 'NaN'
+    details_dict['Price']=price
+    spec_table = browser.find_element(By.XPATH, '//table[@class="a-normal a-spacing-micro"]')
+    rows = spec_table.find_elements(By.XPATH, './/tr')
+    try:
+        for row in rows:
+            # Find the specification name and value
+            spec_name = row.find_element(By.XPATH, './/td[1]/span[@class="a-size-base a-text-bold"]').text
+            spec_value = row.find_element(By.XPATH, './/td[2]/span[@class="a-size-base po-break-word"]').text
+
+            # Add the specification name and value to the dictionary
+            details_dict[spec_name] = spec_value
+    except NoSuchElementException:
+        print("no specification")
+        pass
+
+    # return the dictionary
+    return details_dict
+
+
+
+#Call the function for all the links
+
+import pandas as pd
+lst=[]
+for link in links:
+    try:
+        browser = webdriver.Chrome()
+        browser.get(link)
+        lst.append(pd.DataFrame(get_product_details(),index=[0]))
+    except:
+        continue
+df=pd.concat(lst,ignore_index=True)
+df.reset_index(drop=True, inplace=True)
 
 
 
         
         
 
-#Converting Lists to Data Frame
-df=pd.DataFrame([product_title,product_price,brand_name,product_model,product_colour,product_form_factor,product_connector_type])
-df=df.transpose()
-df.columns = ['Title', 'Price','Brand','Model Name','Colour','Form factor','Connector Type'.'Connectivity']
-
-
-#Converting List to CSV
+#Converting df to CSV
 df.to_csv('Amazon_headphones.csv', index=False) 
