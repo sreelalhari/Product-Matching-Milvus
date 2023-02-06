@@ -30,8 +30,8 @@ def get_product_links(base_url, brand_list):
         
         # Infinite loop to handle pagination
         while True:
-            # Breaking the loop after 20 iterations
-            if counter == 20:
+            # Breaking the loop after 5 iterations
+            if counter == 5:
                 break
             
             try:
