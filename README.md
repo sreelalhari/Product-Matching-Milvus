@@ -24,4 +24,11 @@ To use this project, follow these steps:
 ## Contributing
 To contribute to this project, please reach out to the project maintainers.
 
-.
+## Output
+The output of the script will be a list of similar products for each product in the input file.
+
+## Customization
+The product matching script can be customized to match products based on different attributes or a combination of attributes.
+
+## Conclusion
+This project will provide an efficient solution for product matching in eCommerce websites using Milvus. The solution can be easily integrated into any eCommerce platform to provide better product recommendations to customers
