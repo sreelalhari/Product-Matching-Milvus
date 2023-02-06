@@ -1,67 +1,67 @@
-#importing necessary libraries
+# Importing required libraries from selenium 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
+# Importing exception handling libraries
 from selenium.common.exceptions import TimeoutException
 
-
-# Importing the time module to control the wait times
-import time
-
-# Function to get product links
 def get_product_links(base_url, brand_list):
-    # Initializing an empty list to store the links
+    # Initialize an empty list to store the links
     links = []
     
-    # Looping through the list of brands
+    # Loop through each brand in the list
     for brand in brand_list:
-        # Formatting the URL with the brand
+        # Format the base URL with the current brand
         url = base_url.format(brand)
         
-        # Creating a Chrome browser object
+        # Initialize the webdriver
         browser = webdriver.Chrome()
         
-        # Navigating to the URL
+        # Navigate to the URL
         browser.get(url)
         
-        # Initializing a counter
+        # Counter to keep track of the number of pages processed
         counter = 0
         
-        # Infinite loop to handle pagination
+        # Loop until all pages have been processed
         while True:
-            # Breaking the loop after 5 iterations
-            if counter == 5:
+            # If all pages have been processed, break out of the loop
+            if counter == 1:
                 break
-            
+                
             try:
-                # Finding the next button element
+                # Find the next button
                 next_button = browser.find_element(By.CLASS_NAME, "s-pagination-item.s-pagination-next")
                 
-                # Checking if the next button is enabled
+                # If the next button is not enabled, break out of the loop
                 if not next_button.is_enabled():
                     break
-                
-                # Finding all the link elements
+                    
+                # Find all the link elements on the page
                 link_elements = browser.find_elements(By.CLASS_NAME, "a-link-normal.s-underline-text.s-underline-link-text.s-link-style.a-text-normal")
                 
-                # Extending the links list with the href attributes of the link elements
+                # Add the href attribute of each link element to the links list
                 links.extend([link.get_attribute('href') for link in link_elements])
                 
-                # Waiting for 25 seconds for the page to load
+                # Wait for the next button to be clickable
                 browser.implicitly_wait(25)
                 
-                # Clicking the next button
+                # Click the next button
                 next_button.click()
                 
-                # Incrementing the counter
+                # Increment the counter
                 counter += 1
+                
+            # If an exception is raised, break out of the loop
             except:
-                # Breaking the loop in case of an exception
                 break
-        
-        # Closing the browser
-        browser.close()
+                
+    # Close the webdriver
+    browser.close()
+    
+    # Return the list of links
+    return links
+
 
 #url with base structure for scraping headphones
 base_url='https://www.amazon.in/s?k=headphones&i=electronics&bbn=1388921031&rh=n%3A1388921031%2Cp_89%3A{}&dc&page=1&crid=26YCJ7VB7YLJ4&qid=1675167468&rnid=3837712031&sprefix=%2Caps%2C1567&ref=sr_pg_'
