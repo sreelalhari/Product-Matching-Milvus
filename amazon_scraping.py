@@ -27,7 +27,7 @@ def get_product_links(base_url, brand_list):
         # Loop until all pages have been processed
         while True:
             # If all pages have been processed, break out of the loop
-            if counter == 1:
+            if counter == 5: # To scrap 5 pages of pagination
                 break
                 
             try:
@@ -79,6 +79,7 @@ links=list(set(links))
 
 def get_product_details():
     details_dict={}
+    
     try:
         title_element=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
         title=title_element.text
@@ -87,11 +88,19 @@ def get_product_details():
     details_dict['Title']=title
     
     try:
-        price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
-        price = price_element.text
+        actual_price_element = browser.find_element(By.XPATH, '//span[@class="a-price a-text-price"]')
+        actual_price = actual_price_element.text
     except:
-        price = 'NaN'
-    details_dict['Price']=price
+        actual_price = 'NaN'
+    details_dict['Actual_Price']=actual_price
+    
+    try:
+        selling_price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
+        selling_price = selling_price_element.text
+    except:
+        selling_price = 'NaN'
+    details_dict['Selling_Price']=selling_price
+    
     spec_table = browser.find_element(By.XPATH, '//table[@class="a-normal a-spacing-micro"]')
     rows = spec_table.find_elements(By.XPATH, './/tr')
     try:
@@ -126,9 +135,6 @@ df=pd.concat(lst,ignore_index=True)
 df.reset_index(drop=True, inplace=True)
 
 
-
-        
-        
 
 #Converting df to CSV
 df.to_csv('amazon_product_details.csv', index=False) 
