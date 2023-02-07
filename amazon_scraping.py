@@ -131,4 +131,4 @@ df.reset_index(drop=True, inplace=True)
         
 
 #Converting df to CSV
-df.to_csv('Amazon_headphones.csv', index=False) 
+df.to_csv('amazon_product_details.csv', index=False) 
