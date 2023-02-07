@@ -77,63 +77,60 @@ links=get_product_links(base_url,brand_list)
 links=list(set(links))
 
 
-def get_product_details():
-    details_dict={}
+def get_product_details(links):
+    lst=[]
+    browser = webdriver.Chrome()
+    for link in links:
+        details_dict={}
+        try:
+            
+            browser.get(link)
+            
+        
     
-    try:
-        title_element=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
-        title=title_element.text
-    except:
-        title= 'NaN'
-    details_dict['Title']=title
+            try:
+                title_element=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
+                title=title_element.text
+            except:
+                title= 'NaN'
+            details_dict['Title']=title
     
-    try:
-        actual_price_element = browser.find_element(By.XPATH, '//span[@class="a-price a-text-price"]')
-        actual_price = actual_price_element.text
-    except:
-        actual_price = 'NaN'
-    details_dict['Actual_Price']=actual_price
+            try:
+                actual_price_element = browser.find_element(By.XPATH, '//span[@class="a-price a-text-price"]')
+                actual_price = actual_price_element.text
+            except:
+                actual_price = 'NaN'
+            details_dict['Actual_Price']=actual_price
     
-    try:
-        selling_price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
-        selling_price = selling_price_element.text
-    except:
-        selling_price = 'NaN'
-    details_dict['Selling_Price']=selling_price
+            try:
+                selling_price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
+                selling_price = selling_price_element.text
+            except:
+                selling_price = 'NaN'
+            details_dict['Selling_Price']=selling_price
     
-    spec_table = browser.find_element(By.XPATH, '//table[@class="a-normal a-spacing-micro"]')
-    rows = spec_table.find_elements(By.XPATH, './/tr')
-    try:
-        for row in rows:
-            # Find the specification name and value
-            spec_name = row.find_element(By.XPATH, './/td[1]/span[@class="a-size-base a-text-bold"]').text
-            spec_value = row.find_element(By.XPATH, './/td[2]/span[@class="a-size-base po-break-word"]').text
+            spec_table = browser.find_element(By.XPATH, '//table[@class="a-normal a-spacing-micro"]')
+            rows = spec_table.find_elements(By.XPATH, './/tr')
+            try:
+                for row in rows:
+                    # Find the specification name and value
+                    spec_name = row.find_element(By.XPATH, './/td[1]/span[@class="a-size-base a-text-bold"]').text
+                    spec_value = row.find_element(By.XPATH, './/td[2]/span[@class="a-size-base po-break-word"]').text
 
-            # Add the specification name and value to the dictionary
-            details_dict[spec_name] = spec_value
-    except NoSuchElementException:
-        print("no specification")
-        pass
+                    # Add the specification name and value to the dictionary
+                    details_dict[spec_name] = spec_value
+            except NoSuchElementException:
+                print("no specification")
+                pass
+            lst.append(pd.DataFrame(details_dict,index=[0]))
+        except:
+            continue
+    browser.close()
+    df=pd.concat(lst,ignore_index=True)
+    df.reset_index(drop=True, inplace=True)
 
-    # return the dictionary
-    return details_dict
-
-
-
-#Call the function for all the links
-
-import pandas as pd
-lst=[]
-for link in links:
-    try:
-        browser = webdriver.Chrome()
-        browser.get(link)
-        lst.append(pd.DataFrame(get_product_details(),index=[0]))
-    except:
-        continue
-df=pd.concat(lst,ignore_index=True)
-df.reset_index(drop=True, inplace=True)
-
+    # return the dataframe
+    return df
 
 
 #Converting df to CSV
