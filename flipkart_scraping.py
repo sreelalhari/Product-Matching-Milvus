@@ -13,14 +13,14 @@ from selenium.common.exceptions import NoSuchElementException
 def get_product_links(base_url, brand_list):
     # Initialize an empty list to store the links
     links = []
+    # Initialize the webdriver
+    browser = webdriver.Chrome()
     
     # Loop through each brand in the list
     for brand in brand_list:
         # Format the base URL with the current brand
         url = base_url.format(brand)
         
-        # Initialize the webdriver
-        browser = webdriver.Chrome()
         
         # Navigate to the URL
         browser.get(url)
@@ -31,7 +31,7 @@ def get_product_links(base_url, brand_list):
         # Loop until all pages have been processed
         while True:
             # If all pages have been processed, break out of the loop
-            if counter == 5: # To scrap 5 pages of pagination
+            if counter == 20: # To scrap all pages of pagination
                 break
                 
             try:
