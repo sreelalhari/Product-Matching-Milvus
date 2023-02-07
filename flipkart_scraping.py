@@ -9,6 +9,7 @@ import pandas as pd
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
+# Defining a function that fetch product links of required brands
 def get_product_links(base_url, brand_list):
     # Initialize an empty list to store the links
     links = []
@@ -79,7 +80,7 @@ links=get_product_links(base_url,brand_list)
 # Removing duplicate links
 links=list(set(links))
 
-
+# Defining a function that returns a dataframe of product details of all products from a list of links
 def get_product_details(links):
     lst=[]
     browser = webdriver.Chrome()
