@@ -77,78 +77,77 @@ links=get_product_links(base_url,brand_list)
 links=list(set(links))
 
 
-def get_product_details():
-    # Create an empty dictionary to store the product details
-    details_dict={}
+def get_product_details(links):
+    lst=[]
+    browser = webdriver.Chrome()
+    for link in links:
+        # Create an empty dictionary to store the product details
+        details_dict={}
+        try:
+            
+            browser.get(link)
     
-    # Try to find the product title and store it in the dictionary
-    try:
-        # Find the element that contains the product title using the XPATH selector
-        title_element=browser.find_element(By.XPATH,'//span[@class="B_NuCI"]')
-        # Extract the text content of the title element
-        title=title_element.text
-    except:
-        # If the element is not found, set the title to "NaN"
-        title= 'NaN'
-    details_dict['Title']=title
-    
-    # Try to find the actual price and store it in the dictionary
-    try:
-        # Find the element that contains the actual price using the XPATH selector
-        actual_price_element = browser.find_element(By.XPATH, '//div[@class="_3I9_wc _2p6lqe"]')
-        # Extract the text content of the actual price element
-        actual_price = actual_price_element.text
-    except:
-        # If the element is not found, set the actual price to "NaN"
-        actual_price = 'NaN'
-    details_dict['Actual_Price']=actual_price
-    
-    # Try to find the selling price and store it in the dictionary
-    try:
-        # Find the element that contains the selling price using the XPATH selector
-        selling_price_element=browser.find_element(By.XPATH,'//div[@class="_30jeq3 _16Jk6d"]')
-        # Extract the text content of the selling price element
-        selling_price=selling_price_element.text
-    except:
-        # If the element is not found, set the selling price to "NaN"
-        selling_price= 'NaN'
-    details_dict['Selling_Price']=selling_price
-    
-    # Find the specification table using the XPATH selector
-    spec_table = browser.find_element(By.XPATH, '//table[@class="_14cfVK"]')
-    # Find all the rows in the specification table
-    rows = spec_table.find_elements(By.XPATH, './/tr')
-    
-    # Try to extract the specification name and value for each row
-    try:
-        for row in rows:
-            # Find the specification name element using the XPATH selector
-            spec_name = row.find_element(By.XPATH, './/td[1][@class="_1hKmbr col col-3-12"]').text
-            # Find the specification value element using the XPATH selector
-            spec_value = row.find_element(By.XPATH, './/td[2][@class="URwL2w col col-9-12"]').text
+            # Try to find the product title and store it in the dictionary
+            try:
+                # Find the element that contains the product title using the XPATH selector
+                title_element=browser.find_element(By.XPATH,'//span[@class="B_NuCI"]')
+                # Extract the text content of the title element
+                title=title_element.text
+            except:
+                # If the element is not found, set the title to "NaN"
+                title= 'NaN'
+            details_dict['Title']=title
 
-            # Add the specification name and value to the dictionary
-            details_dict[spec_name] = spec_value
-    except NoSuchElementException:
-        # If the element is not found, print "no specification" and continue with the next iteration
-        print("no specification")
-        pass
+            # Try to find the actual price and store it in the dictionary
+            try:
+                # Find the element that contains the actual price using the XPATH selector
+                actual_price_element = browser.find_element(By.XPATH, '//div[@class="_3I9_wc _2p6lqe"]')
+                # Extract the text content of the actual price element
+                actual_price = actual_price_element.text
+            except:
+                # If the element is not found, set the actual price to "NaN"
+                actual_price = 'NaN'
+            details_dict['Actual_Price']=actual_price
 
-    # Return the dictionary that contains all the product details
-    return details_dict
-  
-# Call the function for all the links
-import pandas as pd
-lst=[]
-for link in links:
-    try:
-        browser = webdriver.Chrome()
-        browser.get(link)
-        lst.append(pd.DataFrame(get_product_details(),index=[0]))
-    except:
-        continue
-df=pd.concat(lst,ignore_index=True)
-df.reset_index(drop=True, inplace=True)
+            # Try to find the selling price and store it in the dictionary
+            try:
+                # Find the element that contains the selling price using the XPATH selector
+                selling_price_element=browser.find_element(By.XPATH,'//div[@class="_30jeq3 _16Jk6d"]')
+                # Extract the text content of the selling price element
+                selling_price=selling_price_element.text
+            except:
+                # If the element is not found, set the selling price to "NaN"
+                selling_price= 'NaN'
+            details_dict['Selling_Price']=selling_price
+
+            # Find the specification table using the XPATH selector
+            spec_table = browser.find_element(By.XPATH, '//table[@class="_14cfVK"]')
+            # Find all the rows in the specification table
+            rows = spec_table.find_elements(By.XPATH, './/tr')
+
+            # Try to extract the specification name and value for each row
+            try:
+                for row in rows:
+                    # Find the specification name element using the XPATH selector
+                    spec_name = row.find_element(By.XPATH, './/td[1][@class="_1hKmbr col col-3-12"]').text
+                    # Find the specification value element using the XPATH selector
+                    spec_value = row.find_element(By.XPATH, './/td[2][@class="URwL2w col col-9-12"]').text
+
+                    # Add the specification name and value to the dictionary
+                    details_dict[spec_name] = spec_value
+            except NoSuchElementException:
+                # If the element is not found, print "no specification" and continue with the next iteration
+                print("no specification")
+                pass
+            lst.append(pd.DataFrame(details_dict,index=[0]))
+        except:
+            continue
+    browser.close()
+    df=pd.concat(lst,ignore_index=True)
+    df.reset_index(drop=True, inplace=True)
+    
+    # return the dataframe
+    return df
 
 # Converting df to CSV
 df.to_csv('flipkart_product_details.csv', index=False) 
