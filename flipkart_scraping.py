@@ -2,6 +2,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+# Library to deal with the dataframes
+import pandas as pd
+
 # Importing exception handling libraries
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
