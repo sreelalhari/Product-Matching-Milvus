@@ -1,6 +1,6 @@
 import pandas as pd
 # load the csv file
-df = pd.read_csv('/home/midhundasl/milvus/amazon_product_details.csv')
+df = pd.read_csv('amazon_product_details.csv')
 
 # remove the columns with 'Unnamed' in their name
 df.drop(df.columns[df.columns.str.startswith('Unnamed')], axis=1, inplace=True)
