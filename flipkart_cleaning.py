@@ -16,4 +16,4 @@ df["Headphone_Type"] = df["Headphone Type"].replace({"True Wireless": "In Ear", 
 df = df.drop(columns=["Headphone Type"])
 
 # Save the updated DataFrame to a new CSV file
-df.to_csv('flipkart_headphone_details.csv', index=False)
+df.to_csv('flipkart_cleaned_data.csv', index=False)
