@@ -3,11 +3,24 @@
 ## Introduction
 This project is aimed at providing a solution for product matching for e-commerce products using Milvus. 
 
+1. amazon_scraping.py and flipkart_scraping.py are the webscraping codes used to collect product data from amazon and flipkart respectively.
+2. amazon_product_details.csv and flipkart_product_details.csv are the scraped raw data using the web scraping codes.
+3. amazon_cleaning.py and flipkart_cleaning.py are the data cleaning codes.
+4. amazon_cleaned_data.csv and flipkart_cleaned_data.csv are the cleaned data sets.
+
+
 ## Requirements
 The following packages are required to run this project:
 - Milvus
 - Python
 - Any relevant dependencies
+
+## About the files in the repository
+
+1. amazon_scraping.py and flipkart_scraping.py are the webscraping codes used to collect product data from amazon and flipkart respectively.
+2. amazon_product_details.csv and flipkart_product_details.csv are the scraped raw data using the web scraping codes.
+3. amazon_cleaning.py and flipkart_cleaning.py are the data cleaning codes.
+4. amazon_cleaned_data.csv and flipkart_cleaned_data.csv are the cleaned data sets.
 
 ## Installation
 To install the required packages, follow the steps below:
