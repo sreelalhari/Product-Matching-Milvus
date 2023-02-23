@@ -2,6 +2,8 @@ import pandas as pd
 # load the csv file
 df = pd.read_csv('amazon_product_details.csv')
 
+
+
 # remove the columns with 'Unnamed' in their name
 df.drop(df.columns[df.columns.str.startswith('Unnamed')], axis=1, inplace=True)
 
@@ -27,5 +29,17 @@ def merge_connectivity_columns(row, col1, col2, col3, col4, col5, col6):
 data['Connectivity_Type'] = data.apply(lambda row: merge_connectivity_columns(row, 'Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology', 'Wireless communication technologies', 'Connectivity Type'), axis=1)
 data = data.drop(columns=['Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology', 'Wireless communication technologies', 'Connectivity Type'])
 
+#coverting prices columns into floats by removing rupee symbol
+def clean_price(price):
+    if pd.isnull(price):
+        return None
+    else:
+        return float(price.replace('₹', '').replace(',', ''))
+    
+#apply the function
+data['Actual_Price'] = data['Actual_Price'].apply(clean_price)
+data['Selling_Price'] = data['Selling_Price'].apply(clean_price)
+data=data.rename(columns={'Model Name':'Model'})
+
 # save the data to a new csv file
-data.to_csv('amazon_headphone_details.csv', index=False)
+data.to_csv('amazon_cleaned_data.csv', index=False)
