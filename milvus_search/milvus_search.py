@@ -96,5 +96,16 @@ result_df.head()
 
 result_df.to_csv('result_data01.csv',index=False)
 
+# similar product id  to list 
 
+similar_product_id_lists=df_merged['similar_product_id'].tolist()
+# Similar product column creation
 
+Similar_products = [df_merged.loc[similar_product_id_lists[i], 'Title'] for i in range(1390)]
+df_merged['Similar products'] = Similar_products
+
+# Calculate similarity score
+df_merged['Similarity'] = 1 / df_merged['distance']
+
+df_merged.drop(['product_id', 'similar_product_id', 'distance'], axis=1, inplace=True)
+df_merged.to_csv('similar_products.csv', index=False)
