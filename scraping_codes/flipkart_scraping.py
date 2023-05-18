@@ -32,7 +32,7 @@ def get_product_links(base_url, brand_list):
         # Loop until all pages have been processed
         while True:
             # If all pages have been processed, break out of the loop
-            if counter == 20: # To scrap all pages of pagination
+            if counter == 5: # To scrap all pages of pagination
                 break
                 
             try:
@@ -72,7 +72,7 @@ def get_product_links(base_url, brand_list):
 # url with base structure for scraping headphones
 base_url='https://www.flipkart.com/search?q=headphones+boat&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off&p%5B%5D=facets.brand%255B%255D%3D{}&page=1'
 # List of Brand names to search for
-brand_list=['boAt', 'Boult Audio', 'ZEBRONICS', 'Meyaar', 'Portronics', 'Noise', 'Wings', 'Skullcandy', 'PTron', 'Jabra']
+brand_list=['boAt', 'SONY', 'ZEBRONICS', 'Meyaar', 'Portronics', 'Noise', 'Wings', 'Skullcandy', 'PTron', 'Jabra']
 
 
 # Calling the function to scrap all the product links of the brands above and storing it in a list
@@ -88,6 +88,7 @@ def get_product_details(links):
     for link in links:
         # Create an empty dictionary to store the product details
         details_dict={}
+        details_dict['product_link']=link
         try:
             
             browser.get(link)
@@ -153,6 +154,7 @@ def get_product_details(links):
     
     # return the dataframe
     return df
-
+#calling function
+df=get_product_details(links)
 # Converting df to CSV
 df.to_csv('flipkart_product_details.csv', index=False) 
