@@ -6,8 +6,6 @@ import re
 # Load the spaCy English model
 nlp = spacy.load("en_core_web_sm")
 
-
-
 # Preprocessing function for text columns
 def preprocess_text(text):
     # Convert to lowercase
