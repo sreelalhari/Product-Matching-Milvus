@@ -37,7 +37,7 @@ def clean_price(price):
 data['Actual_Price'] = data['Actual_Price'].apply(clean_price)
 data['Selling_Price'] = data['Selling_Price'].apply(clean_price)
 data=data.rename(columns={'Model Name':'Model'})
-
+#drop null values
 data.dropna(inplace=True)
-
+#save dataframe to csv
 data.to_csv("amazon_cleaned_data.csv",index=False)
