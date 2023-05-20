@@ -32,18 +32,11 @@ This repository contains code and data files for various tasks related to data c
 
 You can use the files in this repository for various data-related tasks, including data cleaning, Milvus search, preprocessing, and web scraping. Each folder contains the necessary files and scripts for their respective tasks. Feel free to explore and utilize the code and data files according to your requirements.
 
-Please make sure to adhere to the licensing restrictions, if any, for the data and code files provided in this repository.
-
-
-
-
 ## Requirements
 The following packages are required to run this project:
 - Milvus
 - Python
 - Any relevant dependencies
-
-
 
 ## Installation
 To install the required packages, follow the steps below:
