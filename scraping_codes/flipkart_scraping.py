@@ -11,61 +11,45 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
 # Defining a function that fetch product links of required brands
+# Fetches product links of required brands from a given base URL.
+# Args: base_url (str): The base URL to fetch product links from | brand_list (list): List of brands to fetch product links for.
+# Returns: list: List of product links.
+
 def get_product_links(base_url, brand_list):
-    # Initialize an empty list to store the links
     links = []
-    # Initialize the webdriver
-    browser = webdriver.Chrome()
     
-    # Loop through each brand in the list
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run Chrome in headless mode (without opening a browser window)
+    
+    browser = webdriver.Chrome(options=chrome_options)
+
     for brand in brand_list:
-        # Format the base URL with the current brand
         url = base_url.format(brand)
-        
-        
-        # Navigate to the URL
         browser.get(url)
-        
         # Counter to keep track of the number of pages processed
         counter = 0
-        
-        # Loop until all pages have been processed
+
         while True:
-            # If all pages have been processed, break out of the loop
-            if counter == 5: # To scrap all pages of pagination
+            if counter == 5: # To scrap 5 pages of pagination
                 break
-                
+
             try:
-                # Find the next button
                 next_button = browser.find_element(By.CLASS_NAME, "_1LKTO3")
-                
-                # If the next button is not enabled, break out of the loop
+
                 if not next_button.is_enabled():
                     break
-                    
-                # Find all the link elements on the page
+
                 link_elements = browser.find_elements(By.CLASS_NAME, "s1Q9rs")
-                
-                # Add the href attribute of each link element to the links list
                 links.extend([link.get_attribute('href') for link in link_elements])
-                
-                # Wait for the next button to be clickable
+
                 browser.implicitly_wait(25)
-                
-                # Click the next button
                 next_button.click()
-                
-                # Increment the counter
                 counter += 1
-                
-            # If an exception is raised, break out of the loop
+
             except:
                 break
-                
-    # Close the webdriver
-    browser.close()
-    
-    # Return the list of links
+
+    browser.quit()
     return links
   
   
@@ -83,77 +67,63 @@ links=list(set(links))
 
 # Defining a function that returns a dataframe of product details of all products from a list of links
 def get_product_details(links):
-    lst=[]
-    browser = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    browser = webdriver.Chrome(options=options)
+    
+    details_list = []
+    
     for link in links:
-        # Create an empty dictionary to store the product details
-        details_dict={}
-        details_dict['product_link']=link
+        details_dict = {'product_link': link}
+        
         try:
-            
             browser.get(link)
-    
-            # Try to find the product title and store it in the dictionary
-            try:
-                # Find the element that contains the product title using the XPATH selector
-                title_element=browser.find_element(By.XPATH,'//span[@class="B_NuCI"]')
-                # Extract the text content of the title element
-                title=title_element.text
-            except:
-                # If the element is not found, set the title to "NaN"
-                title= 'NaN'
-            details_dict['Title']=title
-
-            # Try to find the actual price and store it in the dictionary
-            try:
-                # Find the element that contains the actual price using the XPATH selector
-                actual_price_element = browser.find_element(By.XPATH, '//div[@class="_3I9_wc _2p6lqe"]')
-                # Extract the text content of the actual price element
-                actual_price = actual_price_element.text
-            except:
-                # If the element is not found, set the actual price to "NaN"
-                actual_price = 'NaN'
-            details_dict['Actual_Price']=actual_price
-
-            # Try to find the selling price and store it in the dictionary
-            try:
-                # Find the element that contains the selling price using the XPATH selector
-                selling_price_element=browser.find_element(By.XPATH,'//div[@class="_30jeq3 _16Jk6d"]')
-                # Extract the text content of the selling price element
-                selling_price=selling_price_element.text
-            except:
-                # If the element is not found, set the selling price to "NaN"
-                selling_price= 'NaN'
-            details_dict['Selling_Price']=selling_price
-
-            # Find the specification table using the XPATH selector
+            
+            # Extract the product title
+            title_element = browser.find_element(By.XPATH, '//span[@class="B_NuCI"]')
+            title = title_element.text if title_element else 'NaN'
+            details_dict['Title'] = title
+            
+            # Extract the actual price
+            actual_price_element = browser.find_element(By.XPATH, '//div[@class="_3I9_wc _2p6lqe"]')
+            actual_price = actual_price_element.text if actual_price_element else 'NaN'
+            details_dict['Actual_Price'] = actual_price
+            
+            # Extract the selling price
+            selling_price_element = browser.find_element(By.XPATH, '//div[@class="_30jeq3 _16Jk6d"]')
+            selling_price = selling_price_element.text if selling_price_element else 'NaN'
+            details_dict['Selling_Price'] = selling_price
+            
+            # Extract the specification details from the table
             spec_table = browser.find_element(By.XPATH, '//table[@class="_14cfVK"]')
-            # Find all the rows in the specification table
             rows = spec_table.find_elements(By.XPATH, './/tr')
-
-            # Try to extract the specification name and value for each row
-            try:
-                for row in rows:
-                    # Find the specification name element using the XPATH selector
-                    spec_name = row.find_element(By.XPATH, './/td[1][@class="_1hKmbr col col-3-12"]').text
-                    # Find the specification value element using the XPATH selector
-                    spec_value = row.find_element(By.XPATH, './/td[2][@class="URwL2w col col-9-12"]').text
-
-                    # Add the specification name and value to the dictionary
-                    details_dict[spec_name] = spec_value
-            except NoSuchElementException:
-                # If the element is not found, print "no specification" and continue with the next iteration
-                print("no specification")
-                pass
-            lst.append(pd.DataFrame(details_dict,index=[0]))
-        except:
+            
+            for row in rows:
+                # Extract the specification name
+                spec_name_element = row.find_element(By.XPATH, './/td[1][@class="_1hKmbr col col-3-12"]')
+                spec_name = spec_name_element.text if spec_name_element else 'NaN'
+                
+                # Extract the specification value
+                spec_value_element = row.find_element(By.XPATH, './/td[2][@class="URwL2w col col-9-12"]')
+                spec_value = spec_value_element.text if spec_value_element else 'NaN'
+                
+                # Add the specification to the details dictionary
+                details_dict[spec_name] = spec_value
+            
+            # Append the details as a DataFrame to the list
+            details_list.append(details_dict)
+        
+        except (NoSuchElementException, Exception) as e:
+            print("Error occurred for link:", link)
+            print(e)
             continue
-    browser.close()
-    df=pd.concat(lst,ignore_index=True)
-    df.reset_index(drop=True, inplace=True)
+        
+    browser.quit()
     
-    # return the dataframe
+    df = pd.DataFrame(details_list)
+    
     return df
+
 #calling function
 df=get_product_details(links)
 # Converting df to CSV
