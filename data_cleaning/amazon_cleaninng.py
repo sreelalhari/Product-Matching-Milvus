@@ -1,43 +1,133 @@
+# import necessary libraries
 import pandas as pd
-# load the csv file
-df = pd.read_csv('amazon_product_details.csv')
 
-# remove the columns with 'Unnamed' in their name
-df.drop(df.columns[df.columns.str.startswith('Unnamed')], axis=1, inplace=True)
+# Defining few functions to clean the dataset. Explanation about each function is provided above the function.
 
-# drop unnecessary columns
-cols_to_drop = ['Special Feature', 'Mounting Hardware', 'Series','Included Components', 'Material','Compatible Devices','Item Dimensions LxWxH']
-data = df.drop(columns=cols_to_drop)
+    """
+    Load the CSV file into a DataFrame.
+    Args: file_path (str): Path to the CSV file.
+    Returns: pandas.DataFrame: Loaded DataFrame.
+    """
+def load_csv(file_path):
+    return pd.read_csv(file_path)
 
-# define a custom function to merge columns
-def merge_columns(row, col1, col2):
-    return str(row[col2]) if row[col1] == 'nan' else str(row[col1])
 
-# merge the 'Headphones Form Factor' and 'Form Factor' columns into 'Form_Factor'
-data['Form_Factor'] = data.apply(lambda row: merge_columns(row, 'Headphones form factor', 'Form Factor'), axis=1)
-data = data.drop(columns=['Headphones form factor', 'Form Factor'])
+    """
+    Remove specified columns from the DataFrame.
+    Args: dataframe (pandas.DataFrame): Input DataFrame.
+          columns (list): List of column names to be removed.
+    Returns: pandas.DataFrame: Loaded DataFrame.
+    """
+def remove_columns(dataframe, columns):
+    return dataframe.drop(columns=columns)
 
-def merge_connectivity_columns(row, col1, col2, col3, col4):
-    for col in (col1, col2, col3, col4):
-        if row[col] != 'nan':
-            return str(row[col])
 
-# merge columns 'Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology', 'Wireless communication technologies', 'Connectivity Type' into 'Connectivity_Type'
-data['Connectivity_Type'] = data.apply(lambda row: merge_connectivity_columns(row, 'Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology'), axis=1)
-data = data.drop(columns=['Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology'])
+    """
+    Merge values from multiple columns into a single column.
+    Args: row (pandas.Series): Input row of the DataFrame.
+          cols (list): List of column names to be merged.
+    Returns: str: Merged values from the specified columns.
+    """
+def merge_columns(row, cols):
+    merged_values = [str(row[col]) for col in cols if str(row[col]) != 'nan']
+    return ' '.join(merged_values) if merged_values else None
 
-#coverting prices columns into floats by removing rupee symbol
+
+    """
+    Clean and convert price values to float.
+    Args: price (str): Input price value as a string.
+    Returns: float: Cleaned price value.
+    """
 def clean_price(price):
     if pd.isnull(price):
         return None
     else:
         return float(price.replace('₹', '').replace(',', ''))
-      
-#apply the function
-data['Actual_Price'] = data['Actual_Price'].apply(clean_price)
-data['Selling_Price'] = data['Selling_Price'].apply(clean_price)
-data=data.rename(columns={'Model Name':'Model'})
-#drop null values
-data.dropna(inplace=True)
-#save dataframe to csv
-data.to_csv("amazon_cleaned_data.csv",index=False)
+    
+    
+    """
+    Rename a column in the DataFrame.
+    Args: dataframe (pandas.DataFrame): Input DataFrame.
+          old_name (str): Current name of the column.
+          new_name (str): New name for the column.
+    Returns: pandas.DataFrame: DataFrame with the column renamed.
+    """
+def rename_columns(dataframe, old_name, new_name):
+    dataframe.rename(columns={old_name: new_name}, inplace=True)
+    return dataframe
+
+
+    """
+    Categorize connectivity types as "Wired" or "Wireless".    
+    Args: connectivity (str): Input connectivity value.    
+    Returns: str: Categorized connectivity type.
+    """
+def categorize_connectivity(connectivity):
+    wired_keywords = ['wired']
+    wireless_keywords = ['wireless', 'bluetooth']
+    
+    for keyword in wired_keywords:
+        if keyword in str(connectivity).lower():
+            return 'Wired'
+    
+    for keyword in wireless_keywords:
+        if keyword in str(connectivity).lower():
+            return 'Wireless'
+    
+    return None
+
+
+    """
+    Save the DataFrame to a CSV file.    
+    Args: dataframe (pandas.DataFrame): DataFrame to be saved.
+          file_path (str): Path to save the CSV file.
+    """
+def save_to_csv(dataframe, file_path):
+    dataframe.to_csv(file_path, index=False)
+    
+    
+    """
+    Clean the input CSV file based on the specified operations and save the result to a new CSV file.    
+    Args: input_file (str): Path to the input CSV file.
+          output_file (str): Path to save the cleaned CSV file.
+          operations (list): List of operations to be applied on the DataFrame.
+    """
+def clean_data(input_file, output_file, operations):
+    # Load the CSV file
+    df = load_csv(input_file)
+
+    # Apply operations
+    for operation in operations:
+        if operation['type'] == 'drop':
+            df = remove_columns(df, operation['columns'])
+        elif operation['type'] == 'merge':
+            df[operation['target']] = df.apply(lambda row: merge_columns(row, operation['columns']), axis=1)
+            df.drop(columns=operation['columns'], inplace=True)
+        elif operation['type'] == 'clean_price':
+            df[operation['column']] = df[operation['column']].apply(clean_price)
+        elif operation['type'] == 'rename':
+            df = rename_columns(df, operation['old_name'], operation['new_name'])
+        elif operation['type'] == 'categorize_connectivity':
+            df[operation['column']] = df[operation['column']].apply(categorize_connectivity)
+
+    # Drop rows with any null values
+    df.dropna(inplace=True)
+
+    # Save the cleaned dataframe to CSV
+    save_to_csv(df, output_file)
+
+# Clean the input CSV file with specified operations and save the result to a new CSV file.
+input_file = 'amazon_product_details.csv'
+output_file = 'amazon_cleaned_data.csv'
+operations = [
+    {'type': 'drop', 'columns': ['Special Feature', 'Mounting Hardware', 'Series', 'Included Components', 'Material', 'Compatible Devices', 'Item Dimensions LxWxH']},
+    {'type': 'merge', 'columns': ['Headphones form factor', 'Form Factor'], 'target': 'Form_Factor'},
+    {'type': 'merge', 'columns': ['Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology'], 'target': 'Connectivity_Type'},
+    {'type': 'clean_price', 'column': 'Actual_Price'},
+    {'type': 'clean_price', 'column': 'Selling_Price'},
+    {'type': 'rename', 'old_name': 'Model Name', 'new_name': 'Model'},
+    {'type': 'categorize_connectivity', 'column': 'Connectivity_Type'}
+]
+
+clean_data(input_file, output_file, operations)
+
