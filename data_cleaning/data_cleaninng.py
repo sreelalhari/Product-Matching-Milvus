@@ -141,6 +141,9 @@ def clean_data(input_file, output_file, operations):
 
     # Drop rows with any null values
     df.dropna(inplace=True)
+    
+    # Add a primary key column
+    df.insert(0, 'product_key', range(len(df)))
 
     # Save the cleaned dataframe to CSV
     save_to_csv(df, output_file)
