@@ -6,8 +6,14 @@ import re
 # Load the spaCy English model
 nlp = spacy.load("en_core_web_sm")
 
-# Preprocessing function for text columns
+# Preprocessing function for text columns:
+    """
+    Preprocesses the given text by converting to lowercase, removing punctuation,
+    performing tokenization and lemmatization using the spaCy model, and removing
+    consecutive whitespace characters.
+    """
 def preprocess_text(text):
+
     # Convert to lowercase
     text = text.lower()
 
@@ -26,30 +32,55 @@ def preprocess_text(text):
 
     return processed_text
 
-# Load the dataframe
-amazon_df = pd.read_csv('amazon_cleaned_data.csv')
-flipkart_df = pd.read_csv('flipkart_cleaned_data.csv')
 
-# Apply preprocessing to the necessary columns
+# Load the dataframe from CSV file
+def load_dataframe(file_path):
+    return pd.read_csv(file_path)
 
-amazon_df['Title'] = amazon_df['Title'].apply(preprocess_text)
-amazon_df['Brand'] = amazon_df['Brand'].apply(preprocess_text)
-amazon_df['Model'] = amazon_df['Model'].apply(preprocess_text)
-amazon_df['Colour'] = amazon_df['Colour'].apply(preprocess_text)
-amazon_df['Form_Factor'] = amazon_df['Form_Factor'].apply(preprocess_text)
-amazon_df['Connectivity_Type'] = amazon_df['Connectivity_Type'].apply(preprocess_text)
 
-flipkart_df['Title'] = flipkart_df['Title'].apply(preprocess_text)
-flipkart_df['Brand'] = flipkart_df['Brand'].apply(preprocess_text)
-flipkart_df['Model'] = flipkart_df['Model'].apply(preprocess_text)
-flipkart_df['Colour'] = flipkart_df['Colour'].apply(preprocess_text)
-flipkart_df['Form_Factor'] = flipkart_df['Form_Factor'].apply(preprocess_text)
-flipkart_df['Connectivity_Type'] = flipkart_df['Connectivity_Type'].apply(preprocess_text)
+# Preprocess text columns in the dataframe
+    """
+    Preprocesses the specified columns in the dataframe by applying the preprocess_text
+    function to each value.
+    """
+def preprocess_dataframe(dataframe, columns_to_preprocess):
 
-#adding a primary key column
-amazon_df.insert(0, 'product_key', range(len(amazon_df)))
-flipkart_df.insert(0, 'product_key', range(len(flipkart_df)))
+    for column in columns_to_preprocess:
+        dataframe[column] = dataframe[column].apply(preprocess_text)
+    return dataframe
 
-#saving the files
-amazon_df.to_csv('amazon_final.csv',index=False)
-flipkart_df.to_csv('flipkart_final.csv',index=False)
+
+# Save the dataframe to CSV file
+def save_dataframe(dataframe, file_path):
+
+    dataframe.to_csv(file_path, index=False)
+    
+
+# Preprocess the input file and save the result to the output file
+    """
+    Preprocesses the input file by loading the dataframe, applying the preprocessing to
+    the specified columns, and saving the result to the output file.
+    """
+def preprocess_and_save(input_file, output_file, columns_to_preprocess):
+
+    dataframe = load_dataframe(input_file)
+    dataframe = preprocess_dataframe(dataframe, columns_to_preprocess)
+    save_dataframe(dataframe, output_file)
+    
+
+# Specify input and output file paths
+amazon_input_file = 'amazon_cleaned_data.csv'
+amazon_output_file = 'amazon_final.csv'
+flipkart_input_file = 'flipkart_cleaned_data.csv'
+flipkart_output_file = 'flipkart_final.csv'
+
+# Specify columns to preprocess
+amazon_columns_to_preprocess = ['Title', 'Brand', 'Model', 'Colour', 'Form_Factor', 'Connectivity_Type']
+flipkart_columns_to_preprocess = ['Title', 'Brand', 'Model', 'Colour', 'Form_Factor', 'Connectivity_Type']
+
+# Preprocess and save the Amazon data
+preprocess_and_save(amazon_input_file, amazon_output_file, amazon_columns_to_preprocess)
+
+# Preprocess and save the Flipkart data
+preprocess_and_save(flipkart_input_file, flipkart_output_file, flipkart_columns_to_preprocess)
+
