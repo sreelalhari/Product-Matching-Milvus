@@ -10,66 +10,50 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
 # Defining a function that fetch product links of required brands
+# Fetches product links of required brands from a given base URL.
+# Args: base_url (str): The base URL to fetch product links from | brand_list (list): List of brands to fetch product links for.
+# Returns: list: List of product links.
+
 def get_product_links(base_url, brand_list):
-    # Initialize an empty list to store the links
     links = []
-    
-    # Initialize the webdriver
-    browser = webdriver.Chrome()
-    
-    # Loop through each brand in the list
+    # Configure Chrome options for headless mode
+    options = Options()
+    options.add_argument("--headless")
+
+    # Initialize the webdriver with Chrome and options
+    browser = webdriver.Chrome(options=options)
     for brand in brand_list:
-        # Format the base URL with the current brand
         url = base_url.format(brand)
-        
-        
-        # Navigate to the URL
         browser.get(url)
-        
         # Counter to keep track of the number of pages processed
         counter = 0
-        
-        # Loop until all pages have been processed
+
         while True:
-            # If all pages have been processed, break out of the loop
-            if counter == 5: # To scrap all pages of pagination
+            if counter == 5: # To scrap 5 pages of pagination
                 break
-                
+
             try:
-                # Find the next button
                 next_button = browser.find_element(By.CLASS_NAME, "s-pagination-item.s-pagination-next")
-                
-                # If the next button is not enabled, break out of the loop
+
                 if not next_button.is_enabled():
                     break
-                    
-                # Find all the link elements on the page
+
                 link_elements = browser.find_elements(By.CLASS_NAME, "a-link-normal.s-underline-text.s-underline-link-text.s-link-style.a-text-normal")
-                
-                # Add the href attribute of each link element to the links list
                 links.extend([link.get_attribute('href') for link in link_elements])
-                
-                # Wait for the next button to be clickable
+
                 browser.implicitly_wait(25)
-                
-                # Click the next button
                 next_button.click()
-                
-                # Increment the counter
                 counter += 1
-                
-            # If an exception is raised, break out of the loop
+
             except:
                 break
-                
-    # Close the webdriver
+
     browser.close()
-    
-    # Return the list of links
     return links
 
 
-#url with base structure for scraping headphones
+
+# url with base structure for scraping headphones
 base_url='https://www.amazon.in/s?k=headphones&i=electronics&bbn=1388921031&rh=n%3A1388921031%2Cp_89%3A{}&dc&page=1&crid=26YCJ7VB7YLJ4&qid=1675167468&rnid=3837712031&sprefix=%2Caps%2C1567&ref=sr_pg_'
 # List of Brand names to search for
 brand_list=['boAt', 'SONY', 'ZEBRONICS', 'Meyaar', 'Portronics', 'Noise', 'Wings', 'Skullcandy', 'PTron', 'Jabra']
@@ -82,79 +66,67 @@ links=list(set(links))
 
 # Defining a function that returns a dataframe of product details of all products from a list of links
 def get_product_details(links):
-    lst=[]
-    browser = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run Chrome in headless mode (without opening a browser window)
+    browser = webdriver.Chrome(options=options)
+    
+    details_list = []
+    
     for link in links:
-        # Create an empty dictionary to store the product details
-        details_dict={}
-        details_dict['product_link']=link
+        details_dict = {'product_link': link}
+        
         try:
-            
             browser.get(link)
             
-            # Try to find the product title and store it in the dictionary
-            try:
-                # Find the element that contains the product title using the XPATH selector
-                title_element=browser.find_element(By.XPATH,'//span[@class="a-size-large product-title-word-break"]')
-                # Extract the text content of the title element
-                title=title_element.text
-            except:
-                # If the element is not found, set the title to "NaN"
-                title= 'NaN'
-            details_dict['Title']=title
+            # Extract the product title
+            title_element = browser.find_element(By.XPATH, '//span[@class="a-size-large product-title-word-break"]')
+            title = title_element.text if title_element else 'NaN'
+            details_dict['Title'] = title
             
-            # Try to find the actual price and store it in the dictionary
-            try:
-                # Find the element that contains the actual price using the XPATH selector
-                actual_price_element = browser.find_element(By.XPATH, '//span[@class="a-price a-text-price"]')
-                # Extract the text content of the actual price element
-                actual_price = actual_price_element.text
-            except:
-                # If the element is not found, set the actual price to "NaN"
-                actual_price = 'NaN'
-            details_dict['Actual_Price']=actual_price
+            # Extract the actual price
+            actual_price_element = browser.find_element(By.XPATH, '//span[@class="a-price a-text-price"]')
+            actual_price = actual_price_element.text if actual_price_element else 'NaN'
+            details_dict['Actual_Price'] = actual_price
             
-            # Try to find the selling price and store it in the dictionary
-            try:
-                # Find the element that contains the selling price using the XPATH selector
-                selling_price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
-                 # Extract the text content of the selling price element
-                selling_price = selling_price_element.text
-            except:
-                # If the element is not found, set the selling price to "NaN"
-                selling_price = 'NaN'
-            details_dict['Selling_Price']=selling_price
-    
-            # Find the specification table using the XPATH selector
+            # Extract the selling price
+            selling_price_element = browser.find_element(By.XPATH, '//span[@class="a-price-whole"]')
+            selling_price = selling_price_element.text if selling_price_element else 'NaN'
+            details_dict['Selling_Price'] = selling_price
+            
+            # Extract the specification details from the table
             spec_table = browser.find_element(By.XPATH, '//table[@class="a-normal a-spacing-micro"]')
-            # Find all the rows in the specification table
             rows = spec_table.find_elements(By.XPATH, './/tr')
             
-            # Try to extract the specification name and value for each row
-            try:
-                for row in rows:
-                    # Find the specification name element using the XPATH selector
-                    spec_name = row.find_element(By.XPATH, './/td[1]/span[@class="a-size-base a-text-bold"]').text
-                    # Find the specification value element using the XPATH selector
-                    spec_value = row.find_element(By.XPATH, './/td[2]/span[@class="a-size-base po-break-word"]').text
-
-                    # Add the specification name and value to the dictionary
-                    details_dict[spec_name] = spec_value
-            except NoSuchElementException:
-                # If the element is not found, print "no specification" and continue with the next iteration
-                print("no specification")
-                pass
-            lst.append(pd.DataFrame(details_dict,index=[0]))
-        except:
-            continue
+            for row in rows:
+                # Extract the specification name
+                spec_name_element = row.find_element(By.XPATH, './/td[1]/span[@class="a-size-base a-text-bold"]')
+                spec_name = spec_name_element.text if spec_name_element else ''
+                
+                # Extract the specification value
+                spec_value_element = row.find_element(By.XPATH, './/td[2]/span[@class="a-size-base po-break-word"]')
+                spec_value = spec_value_element.text if spec_value_element else ''
+                
+                # Add the specification to the details dictionary
+                details_dict[spec_name] = spec_value
             
-    browser.close()
-    df=pd.concat(lst,ignore_index=True)
-    df.reset_index(drop=True, inplace=True)
-
-    # return the dataframe
+            # Append the details as a DataFrame to the list
+            details_list.append(details_dict)
+        
+        except NoSuchElementException:
+            print("No specification for link:", link)
+        
+        except Exception as e:
+            print("Error occurred for link:", link)
+            print(e)
+            continue
+        
+    browser.quit()
+    
+    df=pd.DataFrame(details_list)
+    
     return df
-#Calling The function
+
+# Calling The function
 df=get_product_details(links)
-#Converting df to CSV
+# Converting df to CSV
 df.to_csv('amazon_product_details.csv', index=False) 
