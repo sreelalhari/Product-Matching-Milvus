@@ -112,10 +112,7 @@ def get_product_details(links):
             # Append the details as a DataFrame to the list
             details_list.append(details_dict)
         
-        except NoSuchElementException:
-            print("No specification for link:", link)
-        
-        except Exception as e:
+        except (NoSuchElementException, Exception) as e:
             print("Error occurred for link:", link)
             print(e)
             continue
