@@ -78,6 +78,29 @@ def categorize_connectivity(connectivity):
 
 
     """
+    Create a new 'Brand' column based on the 'Title' column.
+    """
+def create_brand_column(dataframe):
+    dataframe['Brand'] = dataframe['Title'].str.split().str[0]
+    return dataframe
+
+
+    """
+    Reindex the columns in the DataFrame.
+    """
+def reindex_columns(dataframe, columns):
+    return dataframe.reindex(columns=columns)
+
+
+    """
+    Replace values in the 'Form_Factor' column.
+    """
+def replace_form_factor(dataframe):
+    dataframe["Form_Factor"] = dataframe["Form_Factor"].replace({"True Wireless": "In Ear", "In the Ear": "In Ear", "On the Ear": "On Ear"})
+    return dataframe
+
+
+    """
     Save the DataFrame to a CSV file.    
     Args: dataframe (pandas.DataFrame): DataFrame to be saved.
           file_path (str): Path to save the CSV file.
@@ -109,6 +132,12 @@ def clean_data(input_file, output_file, operations):
             df = rename_columns(df, operation['old_name'], operation['new_name'])
         elif operation['type'] == 'categorize_connectivity':
             df[operation['column']] = df[operation['column']].apply(categorize_connectivity)
+        elif operation['type'] == 'reindex':
+            df = reindex_columns(df, operation['columns'])
+        elif operation['type'] == 'create_brand_column':
+            df = create_brand_column(df)
+        elif operation['type'] == 'replace_form_factor':
+            df = replace_form_factor(df)
 
     # Drop rows with any null values
     df.dropna(inplace=True)
@@ -117,9 +146,11 @@ def clean_data(input_file, output_file, operations):
     save_to_csv(df, output_file)
 
 # Clean the input CSV file with specified operations and save the result to a new CSV file.
-input_file = 'amazon_product_details.csv'
-output_file = 'amazon_cleaned_data.csv'
-operations = [
+
+# Firstly we apply the function on amazon_product_details.csv
+input_file_amazon = 'amazon_product_details.csv'
+output_file_amazon = 'amazon_cleaned_data.csv'
+operations_amazon = [
     {'type': 'drop', 'columns': ['Special Feature', 'Mounting Hardware', 'Series', 'Included Components', 'Material', 'Compatible Devices', 'Item Dimensions LxWxH']},
     {'type': 'merge', 'columns': ['Headphones form factor', 'Form Factor'], 'target': 'Form_Factor'},
     {'type': 'merge', 'columns': ['Connector Type', 'Connectivity technologies', 'Wireless Communication Technology', 'Connectivity Technology'], 'target': 'Connectivity_Type'},
@@ -129,5 +160,24 @@ operations = [
     {'type': 'categorize_connectivity', 'column': 'Connectivity_Type'}
 ]
 
-clean_data(input_file, output_file, operations)
+clean_data(input_file_amazon, output_file_amazon, operations_amazon)
 
+
+#Now we can apply on flipkart_product_details.csv.
+input_file_flipkart = 'flipkart_product_details.csv'
+output_file_flipkart = 'flipkart_cleaned_data.csv'
+operations_flipkart = [
+    {'type': 'drop', 'columns': ['Headphone Design', 'Accessories Included', 'Inline Remote', 'Sales Package', 'Type']},
+    {'type': 'rename', 'old_name': 'Model Name', 'new_name': 'Model'},
+    {'type': 'rename', 'old_name': 'Color', 'new_name': 'Colour'},
+    {'type': 'rename', 'old_name': 'Connectivity', 'new_name': 'Connectivity_Type'},
+    {'type': 'rename', 'old_name': 'Headphone Type', 'new_name': 'Form_Factor'},
+    {'type': 'clean_price', 'column': 'Actual_Price'},
+    {'type': 'clean_price', 'column': 'Selling_Price'},
+    {'type': 'reindex', 'columns': ['product_link', 'Title', 'Actual_Price', 'Selling_Price', 'Brand', 'Model', 'Colour', 'Form_Factor', 'Connectivity_Type']},
+    {'type': 'create_brand_column'},
+    {'type': 'replace_form_factor'},
+    {'type': 'categorize_connectivity', 'column': 'Connectivity_Type'}
+]
+
+clean_data(input_file_flipkart, output_file_flipkart, operations_flipkart)
